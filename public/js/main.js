@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 import * as ldr from './modelsLoader.js';
 import { MAINOBJ, camera, renderer } from './mainSceneComponents.js';
 
