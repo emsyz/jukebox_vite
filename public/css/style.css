@@ -705,3 +705,9 @@ a:not(.unset):hover {
     background: var(--l3);
     padding: var(--gap-small);
 }
+
+@media all and (max-width: 600px) {
+    .threejs-navigation {
+        position: static;
+    }
+}
