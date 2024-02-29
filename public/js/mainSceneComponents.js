@@ -109,8 +109,8 @@ let camera = new THREE.PerspectiveCamera(
 
 // automatically adds to the scene at (0,0,0)
 //scene.add( cube );
-camera.position.z = 8;
-camera.position.y = 1;
+camera.position.z = 8.5;
+camera.position.y = 1.2;
 camera.setFocalLength(70);
 camera.rotation.x = THREE.MathUtils.degToRad(-5);
 

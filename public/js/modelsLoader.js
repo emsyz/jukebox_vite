@@ -71,13 +71,16 @@ let MODELS = {
  */
 function addAndLoad(pathname, scene, infos) {
     let model;
+
     loader.load(pathname, function ( gltf ) {
+
+        // will only take 1st child of loaded scene and all its children
         model = gltf.scene.children[0];
         scene.add( model );
 
         model.receiveShadow = true;
         
-
+        // if part of combi
         if (infos.combi && infos.combiPart) {
             switch (infos.combiPart) {
                 case 'left':
@@ -89,6 +92,7 @@ function addAndLoad(pathname, scene, infos) {
             }
         }
 
+        // sets positio n& rotation (whether its combi or not)
         if (infos.position) {
             model.position.x = infos.position[0],
             model.position.y = infos.position[1],
@@ -102,7 +106,7 @@ function addAndLoad(pathname, scene, infos) {
         }
          
         
-        // placement correction
+        // placement correction : if jukebox with asymetric foot, right part needs to be elevated
         if (infos.combi && infos.combi.right && elevationEl.dataset.elevation == 'true') {
             infos.combi.modifElevationRight(true);
         } else if (infos.combi && infos.combi.right) {
@@ -129,14 +133,21 @@ class Combi {
     constructor(left, right, scene, axesPosition) {
         this.left = left;
         this.right = right;
+
+        // true if automatically rotates at loading page; also used later on
         this.automaticRotate = false;
 
+        // main pivot point
         this.axes = new THREE.AxesHelper(axesSize);
+
+        // if fixed other than [0,0,0] by user
         if (axesPosition) {
             this.axes.position.x = axesPosition[0];
             this.axes.position.y = axesPosition[1];
             this.axes.position.z = axesPosition[2];
         }
+
+        // adds axe to scene
         scene.add(this.axes);
 
         try {
@@ -146,7 +157,7 @@ class Combi {
         }
     }
 
-    /* set left part of combi & basicRotation if undefined */
+    /* set left part of combi & basicRotation if undefined*/
     setLeft(left) {
         this.left = left;
         this.axes.add(left);
@@ -170,6 +181,7 @@ class Combi {
         }
     }
 
+    /* modif elevation : to 0 or to MODELS.elevation (float) */
     modifElevationRight(isElevated) {
         if (isElevated) {
             this.right.position.y = MODELS.elevation;
@@ -178,6 +190,7 @@ class Combi {
         }
     }
 
+    // external method used to remove left or right part from scene
     remove(scene, part) {
         switch (part) {
             case "left":
@@ -195,12 +208,14 @@ class Combi {
         }
     }
 
+    // removes specific object from parent & dispose of its geometry & material
     removeObject(obj) {
         obj.geometry.dispose();
         obj.material.dispose();
         obj.removeFromParent();
     }
 
+    // if both parts are complete
     isLoaded() {
         return (this.left && this.right);
     }
