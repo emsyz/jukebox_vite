@@ -16,10 +16,57 @@ let MAINOBJ = {
 
 //////// LIGHTS
 
-const DirectionalLight = new THREE.DirectionalLight( 0x404040, 130 ); // soft white light
-DirectionalLight.position.set(10, 10, 10);
+const sun = new THREE.DirectionalLight( 0x404040, 130 ); // soft white light
+sun.castShadow = true;
+sun.position.set(10, 10, 10);
 
-MAINOBJ.lights = [DirectionalLight];
+const ambientLight = new THREE.AmbientLight(404040, 1);
+
+// used to create both lights in front of the jukebox, left and right
+const secLights = {
+
+    // physical distance from jukebox to the lights
+    distance: 4,
+
+    // physical height where the lights are placed
+    height: 1.2,
+
+    // lights color
+    color: 0xffffff,
+
+    // numeric value of the lights' strength/intensity
+    power: 20,
+
+    // light max range (default : 0 (no limit))
+    fadeDistance: 20,
+
+    // amount the lights dim along the distance (default : 2)
+    decay: 0.6,
+
+    createLight: function(xDistanceMultiplicator) {
+        let newLight = new THREE.PointLight(
+            secLights.color,
+            secLights.power,
+            secLights.fadeDistance,
+            secLights.decay
+        );
+
+        newLight.position.set(
+            xDistanceMultiplicator * secLights.distance,
+            secLights.height,
+            secLights.distance
+        );
+
+        newLight.castShadow = true;
+
+        return newLight;
+    }
+};
+
+const secLightLeft = secLights.createLight(-1);
+const secLightRight = secLights.createLight(1);
+
+MAINOBJ.lights = [sun, secLightLeft, ambientLight, secLightRight];
 
 
 
