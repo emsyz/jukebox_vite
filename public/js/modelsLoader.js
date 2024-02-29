@@ -159,15 +159,24 @@ class Combi {
         switch (part) {
             case "left":
                 if (!this.left) return;
-                this.left.removeFromParent();
+                // this.left.removeFromParent();
+                console.log(this.left instanceof THREE.WebGLRenderTarget)
+                this.removeObject(this.left);
                 this.left = undefined;
                 break;
             case "right":
                 if (!this.right) return;
-                this.right.removeFromParent();
+                // this.right.removeFromParent();
+                this.removeObject(this.right);
                 this.right = undefined;
                 break;
         }
+    }
+
+    removeObject(obj) {
+        obj.geometry.dispose();
+        obj.material.dispose();
+        obj.removeFromParent();
     }
 
     isLoaded() {
