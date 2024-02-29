@@ -12,6 +12,7 @@ import { MAINOBJ, camera, renderer } from './mainSceneComponents.js';
 /////////////////////// SCENE SETUP
 
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xd9d9d9);
 
 for (let arrays in MAINOBJ) {
     for (let item of MAINOBJ[arrays]) scene.add(item);
@@ -25,13 +26,15 @@ for (let arrays in MAINOBJ) {
 
 /////////////////////// GLTFLoader
 
-let combi1 = new ldr.Combi(null, null);
+let combi1PartsOffset = [0,0, -0.35];
+
+let combi1 = new ldr.Combi(null, null, scene, [0, 0, 0.4]);
 
 let left = ldr.addAndLoad(
     ldr.MODELS['left'][0].path,
     scene,
     {
-        position: [0,0,0],
+        position: combi1PartsOffset,
         rotation: [0, -90, 0],
         combi: combi1,
         combiPart: 'left'
@@ -42,21 +45,21 @@ let right = ldr.addAndLoad(
     ldr.MODELS['right'][2].path,
     scene,
     {
-        position: [0,0,0],
+        position: combi1PartsOffset,
         rotation: [0, -90, 0],
         combi: combi1,
         combiPart: 'right'
     }
 );
 
-let ground = ldr.addAndLoad(
+/*let ground = ldr.addAndLoad(
     '/assets/3DModels/ground.glb',
     scene,
     {
         position: [12,0,0],
         rotation: [0, -90, 0]
     }
-);
+);*/
 
 
 
@@ -107,7 +110,7 @@ uls.forEach((el) => {
                     button.dataset.path,
                     scene,
                     {
-                        position: [0,0,0],
+                        position: combi1PartsOffset,
                         rotation: [0, -90, 0],
                         combi: combi1,
                         combiPart: part
@@ -125,13 +128,14 @@ uls.forEach((el) => {
                 
                 /* verify if after loading there is the correct number of objects and previous ones are indeed deleted
                 right now this is the case for jukebox components but an object scene is added each time and i don't know why */
+                console.log('----------------- infos on model change');
                 let cur = 0;
-                console.log('-------------------------------- ' + cur);
                 scene.traverse((object) => {
                     cur++;
-                    //console.log(object.name);
+                    //console.log(`object : ${object.name}`);
                 });
-                console.log(cur);
+                console.log(`Currently ${cur} objects in scene`);
+                console.log(scene);
             }
         );
         el.appendChild(newLi);
@@ -198,6 +202,16 @@ document.addEventListener(
         );
     }
 );
+
+
+
+// setTimeout(() => {
+//     const axesHelper = new THREE.AxesHelper( 1 );
+//     axesHelper.attach(combi1.left);
+//     axesHelper.position.z = 0.3;
+//     scene.add( axesHelper );
+// }, 4000);
+
 
 function animate() {
     requestAnimationFrame(animate);

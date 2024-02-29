@@ -4,7 +4,7 @@
     "vite": "^5.1.4"
   },
   "scripts": {
-    "dev": "npx",
+    "dev": "npx vite",
     "build": "vite build"
   },
   "name": "jukebox_vite",

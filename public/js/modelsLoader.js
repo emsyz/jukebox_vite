@@ -5,6 +5,9 @@ export { addAndLoad, loader, Combi, elevationEl, MODELS }
 
 const loader = new GLTFLoader();
 
+// debug = 1, put it at 0 to hide the axes
+let axesSize = 1;
+
 
 let elevationEl = document.querySelector('.threejs-elevation');
 
@@ -70,6 +73,21 @@ function addAndLoad(pathname, scene, infos) {
     let model;
     loader.load(pathname, function ( gltf ) {
         model = gltf.scene.children[0];
+        scene.add( model );
+
+        model.receiveShadow = true;
+        
+
+        if (infos.combi && infos.combiPart) {
+            switch (infos.combiPart) {
+                case 'left':
+                    infos.combi.setLeft(model);
+                    break;
+                case 'right':
+                    infos.combi.setRight(model);
+                    break;
+            }
+        }
 
         if (infos.position) {
             model.position.x = infos.position[0],
@@ -82,27 +100,16 @@ function addAndLoad(pathname, scene, infos) {
             model.rotation.y = THREE.MathUtils.degToRad(infos.rotation[1]);
             model.rotation.z = THREE.MathUtils.degToRad(infos.rotation[2]);
         }
-
-        model.receiveShadow = true;
-
-        if (infos.combi && infos.combiPart) {
-            switch (infos.combiPart) {
-                case 'left':
-                    infos.combi.setLeft(model);
-                    break;
-                case 'right':
-                    infos.combi.setRight(model);
-                    break;
-            }
-
-            
-            if (infos.combi.right && elevationEl.dataset.elevation == 'true') {
-                infos.combi.right.position.y = MODELS.elevation;
-            } else if (infos.combi.right) {
-                infos.combi.right.position.y = 0;
-            }
+         
+        
+        // placement correction
+        if (infos.combi && infos.combi.right && elevationEl.dataset.elevation == 'true') {
+            infos.combi.modifElevationRight(true);
+        } else if (infos.combi && infos.combi.right) {
+            infos.combi.modifElevationRight(false);
         }
-        scene.add( gltf.scene );
+
+
     }, undefined, function ( error ) {
     
         console.error( error );
@@ -119,10 +126,18 @@ function addAndLoad(pathname, scene, infos) {
 
 class Combi {
     /* given model loading is async, left & right are very most likely to be undefined if constructor called at file initialization; use setLeft & setRight to initiate everything */
-    constructor(left, right) {
+    constructor(left, right, scene, axesPosition) {
         this.left = left;
         this.right = right;
         this.automaticRotate = false;
+
+        this.axes = new THREE.AxesHelper(axesSize);
+        if (axesPosition) {
+            this.axes.position.x = axesPosition[0];
+            this.axes.position.y = axesPosition[1];
+            this.axes.position.z = axesPosition[2];
+        }
+        scene.add(this.axes);
 
         try {
             this.basicRotation = left.rotation;
@@ -134,6 +149,7 @@ class Combi {
     /* set left part of combi & basicRotation if undefined */
     setLeft(left) {
         this.left = left;
+        this.axes.add(left);
         if (!this.basicRotation) {
             this.basicRotation = [
                 left.rotation.x,
@@ -145,14 +161,21 @@ class Combi {
     /* set right part of combi & basicRotation if undefined */
     setRight(right) {
         this.right = right;
+        this.axes.add(right);
         if (!this.basicRotation) {
             this.basicRotation = [
                 right.rotation.x,
                 right.rotation.y,
                 right.rotation.z];
         }
+    }
 
-        
+    modifElevationRight(isElevated) {
+        if (isElevated) {
+            this.right.position.y = MODELS.elevation;
+        } else {
+            this.right.position.y = 0;
+        }
     }
 
     remove(scene, part) {
@@ -160,7 +183,6 @@ class Combi {
             case "left":
                 if (!this.left) return;
                 // this.left.removeFromParent();
-                console.log(this.left instanceof THREE.WebGLRenderTarget)
                 this.removeObject(this.left);
                 this.left = undefined;
                 break;
@@ -206,38 +228,24 @@ class Combi {
     /* rotates back to place */
     rotateBasic() {
         if (this.basicRotation) {
-            this.left.rotation.x = this.basicRotation[0];
-            this.left.rotation.y = this.basicRotation[1];
-            this.left.rotation.z = this.basicRotation[2];
-            
-            this.right.rotation.x = this.basicRotation[0];
-            this.right.rotation.y = this.basicRotation[1];
-            this.right.rotation.z = this.basicRotation[2];
+            this.axes.rotation.x = this.basicRotation[0];
+            this.axes.rotation.y = this.basicRotation[1];
+            this.axes.rotation.z = this.basicRotation[2];
         }
     }
 
     /* sets rotation (regardless of its current rotation) */
     rotate(x, y, z) {
-        this.left.rotation.x = THREE.MathUtils.degToRad(x);
-        this.left.rotation.y = THREE.MathUtils.degToRad(y);
-        this.left.rotation.z = THREE.MathUtils.degToRad(z);
-
-        this.right.rotation.x = THREE.MathUtils.degToRad(x);
-        this.right.rotation.y = THREE.MathUtils.degToRad(y);
-        this.right.rotation.z = THREE.MathUtils.degToRad(z);
+        this.axes.rotation.x += THREE.MathUtils.degToRad(x);
+        this.axes.rotation.y += THREE.MathUtils.degToRad(y);
+        this.axes.rotation.z += THREE.MathUtils.degToRad(z);
     }
 
     /* adds rotation to current rotation : allows continuous rotation */
     rotateMove(x, y, z) {
-        this.left.rotation.x += THREE.MathUtils.degToRad(x);
-        this.left.rotation.y += THREE.MathUtils.degToRad(y);
-        this.left.rotation.z += THREE.MathUtils.degToRad(z);
-
-        this.right.rotation.x += THREE.MathUtils.degToRad(x);
-        this.right.rotation.y += THREE.MathUtils.degToRad(y);
-        this.right.rotation.z += THREE.MathUtils.degToRad(z);
+        this.axes.rotation.x += THREE.MathUtils.degToRad(x);
+        this.axes.rotation.y += THREE.MathUtils.degToRad(y);
+        this.axes.rotation.z += THREE.MathUtils.degToRad(z);
     }
 }
 
-
-let sceneModels = [];
