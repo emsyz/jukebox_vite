@@ -154,6 +154,7 @@ let lastTouchMove = 0;
 let newTouchMove;
 let delta;
 let speedMultiplier = 2;
+let speedMultiplierComputer = 6;
 let ontouchmove = (event) => {
     newTouchMove = event.touches[0].clientX;
     delta = newTouchMove - lastTouchMove;
@@ -174,7 +175,7 @@ document.querySelector("canvas").addEventListener(
 
 let onmousemove = (event) => {
     if (!combi1.isAutomaticallyRotating() && combi1.isLoaded()) {
-        combi1.rotateMove(0, event.movementX/18, 0);
+        combi1.rotateMove(0, event.movementX/speedMultiplierComputer, 0);
     }
 }
 

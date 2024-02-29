@@ -61,8 +61,8 @@ let camera = new THREE.PerspectiveCamera(
 
 // automatically adds to the scene at (0,0,0)
 //scene.add( cube );
-camera.position.z = 2;
-camera.position.y = 0.5;
+camera.position.z = 2.2;
+camera.position.y = 0.56;
 
 
 

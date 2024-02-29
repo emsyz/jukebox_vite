@@ -1,5 +1,7 @@
+// THREEJS imports
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// local imports
 import * as ldr from './modelsLoader.js';
 import { MAINOBJ, camera, renderer } from './mainSceneComponents.js';
 
@@ -119,6 +121,17 @@ uls.forEach((el) => {
                 if (part == 'left') {
                     ldr.elevationEl.dataset.elevation = button.dataset.elevation;
                 }
+
+                
+                /* verify if after loading there is the correct number of objects and previous ones are indeed deleted
+                right now this is the case for jukebox components but an object scene is added each time and i don't know why */
+                let cur = 0;
+                console.log('-------------------------------- ' + cur);
+                scene.traverse((object) => {
+                    cur++;
+                    //console.log(object.name);
+                });
+                console.log(cur);
             }
         );
         el.appendChild(newLi);
@@ -141,6 +154,7 @@ let lastTouchMove = 0;
 let newTouchMove;
 let delta;
 let speedMultiplier = 2;
+let speedMultiplierComputer = 6;
 let ontouchmove = (event) => {
     newTouchMove = event.touches[0].clientX;
     delta = newTouchMove - lastTouchMove;
@@ -161,7 +175,7 @@ document.querySelector("canvas").addEventListener(
 
 let onmousemove = (event) => {
     if (!combi1.isAutomaticallyRotating() && combi1.isLoaded()) {
-        combi1.rotateMove(0, event.movementX/18, 0);
+        combi1.rotateMove(0, event.movementX/speedMultiplierComputer, 0);
     }
 }
 
