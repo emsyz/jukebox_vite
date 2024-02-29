@@ -91,7 +91,7 @@ let sizes = {
         console.log(`${sizes.w}w - ${sizes.h}h`);
     }
 }
-
+    
 let camera = new THREE.PerspectiveCamera(
 
     // field of view : extent of the scene that can be displayed
@@ -104,12 +104,15 @@ let camera = new THREE.PerspectiveCamera(
     0.1,
     
     // far clipping plane (after won't be rendered)
-    1000 );
+    1000
+);
 
 // automatically adds to the scene at (0,0,0)
 //scene.add( cube );
-camera.position.z = 2.2;
-camera.position.y = 0.56;
+camera.position.z = 8;
+camera.position.y = 1;
+camera.setFocalLength(70);
+camera.rotation.x = THREE.MathUtils.degToRad(-5);
 
 
 
