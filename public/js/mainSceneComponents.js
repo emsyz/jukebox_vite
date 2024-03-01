@@ -35,13 +35,13 @@ const secLights = {
     color: 0xffffff,
 
     // numeric value of the lights' strength/intensity
-    power: 20,
+    power: 10,
 
     // light max range (default : 0 (no limit))
     fadeDistance: 20,
 
     // amount the lights dim along the distance (default : 2)
-    decay: 0.6,
+    decay: 1,
 
     createLight: function(xDistanceMultiplicator) {
         let newLight = new THREE.PointLight(

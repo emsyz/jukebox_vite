@@ -3,6 +3,7 @@ import * as THREE from 'three';
 
 // local imports
 import * as ldr from './modelsLoader.js';
+import * as buttons from './buttons.js';
 import { MAINOBJ, camera, renderer } from './mainSceneComponents.js';
 
 
@@ -28,19 +29,18 @@ for (let arrays in MAINOBJ) {
 
 // combi1PartsOffset[2] : left & right parts displacement from the pivot point, used to center pivot point on jukebox for its rotation
 let combi1PartsOffset = [0,0, -0.35];
-
 let combi1PivotPointPosition = [0,0,0];
 
 // currently only one combi used in scene
 // currently pivot point at [0,0,0]
-let combi1 = new ldr.Combi(null, null, scene, combi1PivotPointPosition);
+let combi1 = new ldr.Combi(null, null, scene, combi1PivotPointPosition, combi1PartsOffset);
 
 // adds default left part; it will be replaced with buttons later on
 ldr.addAndLoad(
     ldr.MODELS['left'][0].path,
     scene,
     {
-        position: combi1PartsOffset,
+        position: combi1.partsOffset,
         rotation: [0, -90, 0],
         combi: combi1,
         combiPart: 'left'
@@ -52,7 +52,7 @@ ldr.addAndLoad(
     ldr.MODELS['right'][2].path,
     scene,
     {
-        position: combi1PartsOffset,
+        position: combi1.partsOffset,
         rotation: [0, -90, 0],
         combi: combi1,
         combiPart: 'right'
@@ -79,88 +79,28 @@ let rotationButton = document.querySelector('.threejs-button[data-fct="automatic
 rotationButton.addEventListener(
     "click",
     function() {
-        combi1.toggleAutomaticRotate(false, true);
+        combi1.toggleAutomaticRotate();
     }
 );
 
 
 
 
-////////// change model
+////////// change model : done in buttons.js
 
-let uls = document.querySelectorAll(".threejs-options[data-fct='changepart']");
+buttons.BUTTONS.createButtons(
+    ".threejs-options[data-fct='changepart']",
+    'changeButtons',
+    combi1,
+    scene
+);
 
-uls.forEach((el) => {
-    let part = el.dataset.part;
-
-    // example to be removed later on
-    let example = el.querySelector('.threejs-example');
-    example.classList.remove('threejs-example');
-
-    // clones example & adds functions
-    for (let modelInfos of ldr.MODELS[part]) {
-        let newLi = example.cloneNode(true);
-        let button = newLi.querySelector('button');
-        
-        // if if modelInfos elevation is set to true or false (normally only for left side) :
-        // sets elevation to true or false, it will then (in addAndLoad) put right.position.y at correct value
-        if (modelInfos.elevation != undefined) button.dataset.elevation = modelInfos.elevation;
-        
-        // gives button the corect information
-        button.dataset.path = modelInfos.path;
-        button.innerHTML = modelInfos.name;
-        button.dataset.part = part;
-
-        // event listener : changes jukebox left/right values
-        button.addEventListener(
-            "click",
-
-            (event) => {
-
-                // resets combi rotation
-                //combi1.rotateBasic();
-                combi1.remove(scene, part);
-
-                // adds the new part
-                ldr.addAndLoad(
-                    button.dataset.path,
-                    scene,
-                    {
-                        position: combi1PartsOffset,
-                        rotation: [0, -90, 0],
-                        combi: combi1,
-                        combiPart: part
-                    }
-                );
-
-                // SETS ELEVATION for right part
-                // given the async load of parts,
-                // it will set before right part is loaded
-                // so elevation is automatically done within the AddAndLoad function
-                if (part == 'left') {
-                    ldr.elevationEl.dataset.elevation = button.dataset.elevation;
-                }
-
-                
-                /* dev debug : verify if after loading there is the correct number of objects and previous ones are indeed deleted */
-                console.log('----------------- infos on model change');
-                let cur = 0;
-                scene.traverse((object) => {
-                    cur++;
-                    //console.log(`object : ${object.name}`);
-                });
-                console.log(`Currently ${cur} objects in scene`);
-                console.log(scene);
-            }
-        );
-
-        // appends new button to options list
-        el.appendChild(newLi);
-    }
-
-    // deletes example after all buttons are placed
-    example.remove();
-});
+buttons.BUTTONS.createButtons(
+    ".threejs-options[data-fct='changetexture']",
+    'changeTexture',
+    combi1,
+    scene
+);
 
 
 

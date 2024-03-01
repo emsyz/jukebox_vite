@@ -20,34 +20,53 @@
                     Options
                 </h2>
             </div>
-            <ul>
+
+            <h3>General</h3>
+            <ul class="unset flex-row justify-start align-start">
                 <li>
                     <button class="threejs-button" data-fct="automatic-rotate">
-                        Tourne automatiquement
+                        Rotates automatically
                     </button>
                 </li>
             </ul>
 
-            <hr>
+            <h3>Parts change</h3>
 
-            <ul class="threejs-options" data-part="left" data-fct="changepart">
+            <h4>Left part</h4>
+            <ul class="threejs-options unset flex-row justify-start align-start" data-part="left" data-fct="changepart">
                 <li class="threejs-options__li threejs-example">
                     <button class="threejs-button">Ici</button>
                 </li>
             </ul>
 
-            <ul class="threejs-options" data-part="right" data-fct="changepart">
+            <h4>Right part</h4>
+            <ul class="threejs-options unset flex-row justify-start align-start" data-part="right" data-fct="changepart">
                 <li class="threejs-options__li threejs-example">
                     <button class="threejs-button">Ici</button>
                 </li>
             </ul>
 
+            <h3>Materials change</h3>
 
-            <hr>
+            <h4>Details</h4>
+            <ul class="threejs-options unset flex-row justify-start align-start" data-fct="changetexture" data-texturetype="details">
+                <li class="threejs-options__li threejs-example">
+                    <button class="threejs-button">Ici</button>
+                </li>
+            </ul>
 
+            <h4>Shell</h4>
+            <ul class="threejs-options unset flex-row justify-start align-start" data-fct="changetexture" data-texturetype="outerShell">
+                <li class="threejs-options__li threejs-example">
+                    <button class="threejs-button">Ici</button>
+                </li>
+            </ul>
 
-            <ul class="threejs-options" data-fct="changetexture">
-
+            <h4>Doors</h4>
+            <ul class="threejs-options unset flex-row justify-start align-start" data-fct="changetexture" data-texturetype="doors">
+                <li class="threejs-options__li threejs-example">
+                    <button class="threejs-button">Ici</button>
+                </li>
             </ul>
         </div>
     </main>

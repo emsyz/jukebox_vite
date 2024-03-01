@@ -73,6 +73,7 @@
     --gi: calc(50 / 16 * 1rem);
     --hu: calc(100 / 16 * 1rem);
 
+    --gutter: var(--mo);
     --gap: calc(var(--gi) + 0.7vw);
     --gap-small: calc(0.5 * var(--gap));
     --gap-section: clamp(var(--gap), calc(var(--gap) + 4vw), 8vw);
@@ -465,11 +466,21 @@ img.sq {
     margin: 0 !important;
 }
 
+.flex-row {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.flex-column {
+    display: flex;
+    flex-flow: column wrap;
+}
+
 /* ----- FLEX ALIGNS */
 
 [class*="justify-"], [class*="align-"] {
     display: flex !important;
-    gap: var(--gap);
+    gap: var(--gutter);
 }
 
 [class*="justify-"] > *, [class*="align-"] > * {
@@ -562,6 +573,12 @@ img.sq {
 
 /* ------------------------- FONTS -------------------------
    --------------------------------------------------------- */
+
+
+
+h1, h2, h3, h4, h5, h6 {
+    margin: var(--gutter) auto var(--gutter);
+}
 
 
 
@@ -699,11 +716,19 @@ a:not(.unset):hover {
 .threejs-navigation {
     position: fixed;
     z-index: 400;
-    border: 1px solid red;
     top: var(--gap-small);
     right: var(--gap-small);
-    background: var(--l3);
+    background: var(--l1);
     padding: var(--gap-small);
+    max-height: calc(100vh - 2 * var(--gap-small));
+    min-height: 200px;
+    overflow: auto;
+}
+
+@media all and (min-width: 600px) {
+    .threejs-navigation {
+        width: clamp(260px, 30vw, 500px);
+    }
 }
 
 @media all and (max-width: 600px) {

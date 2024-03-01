@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-export { addAndLoad, loader, Combi, elevationEl, MODELS }
+export { addAndLoad, loader, Combi, elevationEl, MODELS, TEXTURES, MATERIALS }
 
 const loader = new GLTFLoader();
 
@@ -10,6 +10,137 @@ let axesSize = 1;
 
 
 let elevationEl = document.querySelector('.threejs-elevation');
+
+let MATERIALS = {
+
+    "M_Glass": {
+        displayedName: "Glass",
+        material: undefined
+    },
+    "M_Glass_Black": {
+        displayedName: "Black Glass",
+        material: undefined
+    },
+    "M_Gold": {
+        displayedName: "Gold",
+        material: undefined
+    },
+    "M_Metal": {
+        displayedName: "Metal",
+        material: undefined
+    },
+    "M_Wood_Dark": {
+        displayedName: "Dark Wood",
+        material: undefined
+    },
+    "M_Wood_Brown": {
+        displayedName: "Brown Wood",
+        material: undefined
+    },
+    "M_Wood_Orange": {
+        displayedName: "Orange Wood",
+        material: undefined
+    },
+    "M_Wood_Light": {
+        displayedName: "Light Wood",
+        material: undefined
+    },
+    "M_White": {
+        displayedName: "White",
+        material: undefined
+    },
+
+    get: (name) => {
+        return MATERIALS[name];
+    }
+
+    // new materials might be loaded with following loader.load() call
+};
+
+
+// loads materials and introduce them in materials 3D scene
+loader.load(
+    "/assets/3DModels/materials.gltf",
+    function ( gltf ) {
+        let cubes = gltf.scene.children;
+        for (let cube of cubes) {
+            let material = cube.material;
+            if (MATERIALS[material.name]) {
+                MATERIALS[material.name].material = material;
+            } else {
+                MATERIALS[material.name] = {
+                    displayedName: material.name
+                            .replace(/(\W+)|(_+)/g, ' ')
+                            .replace(/^\s+|\s+$/g, ''),
+                    material: material
+                }
+            }
+        }
+
+        console.log(MATERIALS);
+    },
+    undefined,
+    function ( error ) {
+        console.error( error );
+    }
+);
+
+
+let TEXTURES = {
+
+    'details': {
+        name: 'Details',
+        possibilities: [
+            "M_Wood_Dark",
+            "M_Wood_Brown",
+            "M_Wood_Orange",
+            "M_Wood_Light",
+
+            "M_Metal",
+            "M_White"
+        ],
+        objectNamesList: [
+            '_details_inner',
+            '_details_outer',
+            '_details_lines',
+            '_details_border'
+        ]
+    },
+
+    'outerShell': {
+        name: 'Outer shell',
+        possibilities: [
+            "M_Wood_Dark",
+            "M_Wood_Brown",
+            "M_Wood_Orange",
+            "M_Wood_Light",
+
+            "M_Metal",
+            "M_White"
+        ],
+
+        objectNamesList: [
+            '_shell',
+            '_lid',
+            '_smallAperture',
+            '_ventilation',
+            '_speakers_door'
+        ]
+    },
+
+    'doors': {
+        name: 'Doors',
+        possibilities: [
+            "M_Glass",
+            "M_Glass_Black"
+        ],
+
+        objectNamesList: [
+            '_door_left',
+            '_door_right'
+        ]
+    }
+};
 
 
 let MODELS = {
@@ -130,12 +261,14 @@ function addAndLoad(pathname, scene, infos) {
 
 class Combi {
     /* given model loading is async, left & right are very most likely to be undefined if constructor called at file initialization; use setLeft & setRight to initiate everything */
-    constructor(left, right, scene, axesPosition) {
+    constructor(left, right, scene, axesPosition, partsOffset) {
         this.left = left;
         this.right = right;
 
         // true if automatically rotates at loading page; also used later on
         this.automaticRotate = false;
+
+        if (partsOffset) this.partsOffset = partsOffset;
 
         // main pivot point
         this.axes = new THREE.AxesHelper(axesSize);
