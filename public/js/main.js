@@ -4,7 +4,9 @@ import * as THREE from 'three';
 // local imports
 import * as ldr from './modelsLoader.js';
 import * as buttons from './buttons.js';
+import { MATERIALS, TEXTURES, MODELS } from './VALUES.js';
 import { MAINOBJ, camera, renderer } from './mainSceneComponents.js';
+
 
 
 
@@ -13,6 +15,7 @@ import { MAINOBJ, camera, renderer } from './mainSceneComponents.js';
 /////////////////////// SCENE SETUP
 
 const scene = new THREE.Scene();
+const scene_stock = new THREE.Scene();
 scene.background = new THREE.Color(0xd9d9d9);
 
 for (let arrays in MAINOBJ) {
@@ -35,40 +38,102 @@ let combi1PivotPointPosition = [0,0,0];
 // currently pivot point at [0,0,0]
 let combi1 = new ldr.Combi(null, null, scene, combi1PivotPointPosition, combi1PartsOffset);
 
-// adds default left part; it will be replaced with buttons later on
-ldr.addAndLoad(
-    ldr.MODELS['left'][0].path,
-    scene,
-    {
-        position: combi1.partsOffset,
-        rotation: [0, -90, 0],
-        combi: combi1,
-        combiPart: 'left'
+
+
+ldr.loader.load(
+    '/assets/3DModels/jukeboxAll.glb',
+    (gltf) => {
+        let combi = combi1;
+        let models = gltf.scene.children;
+
+        models.forEach((model) => {
+
+            // fix from blender
+            model.position.x = 0;
+            model.position.y = 0;
+            model.position.z = 0;
+
+            model.rotation.y = THREE.MathUtils.degToRad(-90);
+
+            // 
+            let name = model.name;
+            let suffix = name.match(/^[A-Z]_[A-Z]{2,3}_/)[0];
+            let displayedName;
+            let elevation = undefined;
+
+            switch (suffix) {
+                case "L_SS_":
+                    displayedName = 'Shelves (simple foot)';
+                    elevation = false;
+                    break;
+                case "L_SA_":
+                    displayedName = 'Shelves (Asymetric foot)';
+                    elevation = true;
+                    break;
+                case "L_DS_":
+                    displayedName = 'Door (simple foot)';
+                    elevation = false;
+                    break;
+                case "L_DA_":
+                    displayedName = 'Door (Asymetric foot)';
+                    elevation = true;
+                    break;
+
+                case "R_BD_":
+                    displayedName = 'Big (with drawer)';
+                    break;
+                case "R_BND_":
+                    displayedName = 'Big (no drawer)';
+                    break;
+                case "R_SD_":
+                    displayedName = 'Small (with drawer)';
+                    break;
+                case "R_SND_":
+                    displayedName = 'Small (no drawer)';
+                    break;
+            }
+
+            let part;
+            if (name.match(/^L_/) != undefined) part = 'left';
+            else part = 'right';
+
+            let modelInfos = {
+                name: displayedName,
+                model: model,
+                elevation: elevation
+            };
+
+            MODELS[part][suffix] = modelInfos;
+        });
+
+        combi.setWithSuffix("L_DA_");
+        combi.setWithSuffix("R_BD_");
+
+
+
+
+        ////////// change model : done in buttons.js
+        
+        buttons.BUTTONS.createButtons(
+            ".threejs-options[data-fct='changepart']",
+            'changeButtons',
+            combi1,
+            scene
+        );
+        
+        buttons.BUTTONS.createButtons(
+            ".threejs-options[data-fct='changetexture']",
+            'changeTexture',
+            combi1,
+            scene
+        );
+        
+    },
+    undefined,
+    (error) => {
+        console.log(error);
     }
 );
-
-// adds default right part; it will be replaced with buttons later on
-ldr.addAndLoad(
-    ldr.MODELS['right'][2].path,
-    scene,
-    {
-        position: combi1.partsOffset,
-        rotation: [0, -90, 0],
-        combi: combi1,
-        combiPart: 'right'
-    }
-);
-
-/*
-// mesh for ground, unused here since scene.background is used with a color
-let ground = ldr.addAndLoad(
-    '/assets/3DModels/ground.glb',
-    scene,
-    {
-        position: [12,0,0],
-        rotation: [0, -90, 0]
-    }
-);*/
 
 
 
@@ -81,25 +146,6 @@ rotationButton.addEventListener(
     function() {
         combi1.toggleAutomaticRotate();
     }
-);
-
-
-
-
-////////// change model : done in buttons.js
-
-buttons.BUTTONS.createButtons(
-    ".threejs-options[data-fct='changepart']",
-    'changeButtons',
-    combi1,
-    scene
-);
-
-buttons.BUTTONS.createButtons(
-    ".threejs-options[data-fct='changetexture']",
-    'changeTexture',
-    combi1,
-    scene
 );
 
 
@@ -161,14 +207,6 @@ document.addEventListener(
     }
 );
 
-
-
-// setTimeout(() => {
-//     const axesHelper = new THREE.AxesHelper( 1 );
-//     axesHelper.attach(combi1.left);
-//     axesHelper.position.z = 0.3;
-//     scene.add( axesHelper );
-// }, 4000);
 
 
 function animate() {

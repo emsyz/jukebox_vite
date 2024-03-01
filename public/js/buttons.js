@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
+import { MATERIALS, TEXTURES, MODELS } from './VALUES.js';
 import * as ldr from './modelsLoader.js';
+
 
 export { BUTTONS }
 
@@ -35,48 +37,27 @@ let BUTTONS = {
         let part = list.dataset.part;
         let newButtons = [];
         // clones example & adds functions
-        for (let modelInfos of ldr.MODELS[part]) {
+        for (let modelSuffix in MODELS[part]) {
+            let allInfos = MODELS[part][modelSuffix];
+
             let newLi = example.cloneNode(true);
             let button = newLi.querySelector('button');
             
-            // if if modelInfos elevation is set to true or false (normally only for left side) :
-            // sets elevation to true or false, it will then (in addAndLoad) put right.position.y at correct value
-            if (modelInfos.elevation != undefined) button.dataset.elevation = modelInfos.elevation;
+            // sets elevation to true or false, it will then (in later process) put right.position.y at correct value
+            button.dataset.elevation = allInfos.elevation;
             
             // gives button the corect information
-            button.dataset.path = modelInfos.path;
-            button.innerHTML = modelInfos.name;
+            button.innerHTML = allInfos.name;
+            button.dataset.suffix = modelSuffix;
             button.dataset.part = part;
+
 
             // event listener : changes jukebox left/right values
             button.addEventListener(
                 "click",
 
                 (event) => {
-
-                    // resets combi rotation
-                    //combi.rotateBasic();
-                    combi.remove(scene, part);
-
-                    // adds the new part
-                    ldr.addAndLoad(
-                        button.dataset.path,
-                        scene,
-                        {
-                            position: combi.partsOffset,
-                            rotation: [0, -90, 0],
-                            combi: combi,
-                            combiPart: part
-                        }
-                    );
-
-                    // SETS ELEVATION for right part
-                    // given the async load of parts,
-                    // it will set before right part is loaded
-                    // so elevation is automatically done within the AddAndLoad function
-                    if (part == 'left') {
-                        ldr.elevationEl.dataset.elevation = button.dataset.elevation;
-                    }
+                    combi.setWithSuffix(button.dataset.suffix);
 
                     
                     /* dev debug : verify if after loading there is the correct number of objects and previous ones are indeed deleted */
@@ -100,8 +81,7 @@ let BUTTONS = {
     changeTextures: (example, list, combi, scene) => {
         let newButtons = [];
         let texturetype = list.dataset.texturetype;
-        let textureInfos = ldr.TEXTURES[texturetype];
-
+        let textureInfos = TEXTURES[texturetype];
 
         let possibilities = textureInfos.possibilities;
 
@@ -112,7 +92,7 @@ let BUTTONS = {
             button.dataset.texturetype = texturetype;
             button.dataset.texturename = texture;
 
-            button.innerHTML = ldr.MATERIALS[texture].displayedName;
+            button.innerHTML = MATERIALS[texture].displayedName;
 
             button.addEventListener(
                 "click",
@@ -126,7 +106,7 @@ let BUTTONS = {
                         // early return, makes sure the element should change texture
                         if (!objects.includes(objectShortenedName)) return;
 
-                        object.material = ldr.MATERIALS[texture].material;
+                        object.material = MATERIALS[texture].material;
 
                     });
                 }

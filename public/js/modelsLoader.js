@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-export { addAndLoad, loader, Combi, elevationEl, MODELS, TEXTURES, MATERIALS }
+import { MATERIALS, TEXTURES, MODELS } from './VALUES.js';
+
+export { addAndLoad, loader, Combi, elevationEl, MODELS, TEXTURES, MATERIALS, startModelLoader }
 
 const loader = new GLTFLoader();
 
@@ -11,181 +13,12 @@ let axesSize = 1;
 
 let elevationEl = document.querySelector('.threejs-elevation');
 
-let MATERIALS = {
-
-    "M_Glass": {
-        displayedName: "Glass",
-        material: undefined
-    },
-    "M_Glass_Black": {
-        displayedName: "Black Glass",
-        material: undefined
-    },
-    "M_Gold": {
-        displayedName: "Gold",
-        material: undefined
-    },
-    "M_Metal": {
-        displayedName: "Metal",
-        material: undefined
-    },
-    "M_Wood_Dark": {
-        displayedName: "Dark Wood",
-        material: undefined
-    },
-    "M_Wood_Brown": {
-        displayedName: "Brown Wood",
-        material: undefined
-    },
-    "M_Wood_Orange": {
-        displayedName: "Orange Wood",
-        material: undefined
-    },
-    "M_Wood_Light": {
-        displayedName: "Light Wood",
-        material: undefined
-    },
-    "M_White": {
-        displayedName: "White",
-        material: undefined
-    },
-
-    get: (name) => {
-        return MATERIALS[name];
-    }
-
-    // new materials might be loaded with following loader.load() call
-};
 
 
-// loads materials and introduce them in materials 3D scene
-loader.load(
-    "/assets/3DModels/materials.gltf",
-    function ( gltf ) {
-        let cubes = gltf.scene.children;
-        for (let cube of cubes) {
-            let material = cube.material;
-            if (MATERIALS[material.name]) {
-                MATERIALS[material.name].material = material;
-            } else {
-                MATERIALS[material.name] = {
-                    displayedName: material.name
-                            .replace(/(\W+)|(_+)/g, ' ')
-                            .replace(/^\s+|\s+$/g, ''),
-                    material: material
-                }
-            }
-        }
-
-        console.log(MATERIALS);
-    },
-    undefined,
-    function ( error ) {
-        console.error( error );
-    }
-);
+function startModelLoader(combi) {
+}
 
 
-let TEXTURES = {
-
-    'details': {
-        name: 'Details',
-        possibilities: [
-            "M_Wood_Dark",
-            "M_Wood_Brown",
-            "M_Wood_Orange",
-            "M_Wood_Light",
-
-            "M_Metal",
-            "M_White"
-        ],
-        objectNamesList: [
-            '_details_inner',
-            '_details_outer',
-            '_details_lines',
-            '_details_border'
-        ]
-    },
-
-    'outerShell': {
-        name: 'Outer shell',
-        possibilities: [
-            "M_Wood_Dark",
-            "M_Wood_Brown",
-            "M_Wood_Orange",
-            "M_Wood_Light",
-
-            "M_Metal",
-            "M_White"
-        ],
-
-        objectNamesList: [
-            '_shell',
-            '_lid',
-            '_smallAperture',
-            '_ventilation',
-            '_speakers_door'
-        ]
-    },
-
-    'doors': {
-        name: 'Doors',
-        possibilities: [
-            "M_Glass",
-            "M_Glass_Black"
-        ],
-
-        objectNamesList: [
-            '_door_left',
-            '_door_right'
-        ]
-    }
-};
-
-
-let MODELS = {
-    elevation: 0.129896,
-    'left': [
-        {
-            path: '/assets/3DModels/LEFT_shelves_simpleFoot.glb',
-            name: 'Shelves simple foot',
-            elevation: false
-        },
-        {
-            path: '/assets/3DModels/LEFT_shelves_asymetricFoot.glb',
-            name: 'Shelves asymetric foot',
-            elevation: true
-        },
-        {
-            path: '/assets/3DModels/LEFT_door_simpleFoot.glb',
-            name: 'Door simple foot',
-            elevation: false
-        },
-        {
-            path: '/assets/3DModels/LEFT_door_asymetricFoot.glb',
-            name: 'Door asymetric foot',
-            elevation: true
-        }
-    ],
-    'right': [
-        {
-            path: '/assets/3DModels/RIGHT_big_drawer.glb',
-            name: 'Big with a drawer'
-        },
-        {
-            path: '/assets/3DModels/RIGHT_big_noDrawer.glb',
-            name: 'Big without a drawer'
-        },
-        {
-            path: '/assets/3DModels/RIGHT_small_drawer.glb',
-            name: 'Small with a drawer'
-        },
-        {
-            path: '/assets/3DModels/RIGHT_small_noDrawer.glb',
-            name: 'Small without a drawer'
-        }
-    ]
-};
 
 /**
  * 
@@ -265,6 +98,9 @@ class Combi {
         this.left = left;
         this.right = right;
 
+        this.leftSuffix;
+        this.rightSuffix;
+
         // true if automatically rotates at loading page; also used later on
         this.automaticRotate = false;
 
@@ -290,9 +126,26 @@ class Combi {
         }
     }
 
+    setWithSuffix(suffix) {
+        let part = (suffix.match(/^L_/) != null) ? "left" : "right";
+        let model = MODELS[part][suffix].model;
+        if (part == "left") this.setLeft(model, suffix);
+        else this.setRight(model, suffix);
+
+        if (this.leftSuffix) {
+            let elevate = MODELS["left"][this.leftSuffix].elevation;
+            this.modifElevationRight(elevate);
+        }
+    }
+
     /* set left part of combi & basicRotation if undefined*/
-    setLeft(left) {
+    setLeft(left, suffix) {
+        if (this.left != undefined) {
+            this.left.removeFromParent();
+        }
+
         this.left = left;
+        this.leftSuffix = suffix;
         this.axes.add(left);
         if (!this.basicRotation) {
             this.basicRotation = [
@@ -303,8 +156,13 @@ class Combi {
     }
 
     /* set right part of combi & basicRotation if undefined */
-    setRight(right) {
+    setRight(right, suffix) {
+        if (this.right != undefined) {
+            this.right.removeFromParent();
+        }
+
         this.right = right;
+        this.rightSuffix = suffix;
         this.axes.add(right);
         if (!this.basicRotation) {
             this.basicRotation = [
@@ -316,6 +174,7 @@ class Combi {
 
     /* modif elevation : to 0 or to MODELS.elevation (float) */
     modifElevationRight(isElevated) {
+        if (!this.right) return;
         if (isElevated) {
             this.right.position.y = MODELS.elevation;
         } else {
@@ -324,28 +183,19 @@ class Combi {
     }
 
     // external method used to remove left or right part from scene
-    remove(scene, part) {
+    removecccc(part) {
         switch (part) {
             case "left":
                 if (!this.left) return;
-                // this.left.removeFromParent();
-                this.removeObject(this.left);
+                this.left.removeFromParent();
                 this.left = undefined;
                 break;
             case "right":
                 if (!this.right) return;
-                // this.right.removeFromParent();
-                this.removeObject(this.right);
+                this.right.removeFromParent();
                 this.right = undefined;
                 break;
         }
-    }
-
-    // removes specific object from parent & dispose of its geometry & material
-    removeObject(obj) {
-        obj.geometry.dispose();
-        obj.material.dispose();
-        obj.removeFromParent();
     }
 
     // if both parts are complete
