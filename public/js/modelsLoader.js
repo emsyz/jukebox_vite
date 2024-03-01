@@ -14,6 +14,32 @@ let axesSize = 1;
 let elevationEl = document.querySelector('.threejs-elevation');
 
 
+// loads materials and introduce them in materials 3D scene
+loader.load(
+    "/assets/3DModels/materials.gltf",
+    function ( gltf ) {
+        let cubes = gltf.scene.children;
+        for (let cube of cubes) {
+            let material = cube.material;
+            if (MATERIALS[material.name]) {
+                MATERIALS[material.name].material = material;
+            } else {
+                MATERIALS[material.name] = {
+                    displayedName: material.name
+                            .replace(/(\W+)|(_+)/g, ' ')
+                            .replace(/^\s+|\s+$/g, ''),
+                    material: material
+                }
+            }
+        }
+
+        console.log(MATERIALS);
+    },
+    undefined,
+    function ( error ) {
+        console.error( error );
+    }
+);
 
 function startModelLoader(combi) {
 }
