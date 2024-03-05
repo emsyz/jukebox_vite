@@ -16,7 +16,7 @@ import { MAINOBJ, camera, renderer } from './mainSceneComponents.js';
 
 const scene = new THREE.Scene();
 const scene_stock = new THREE.Scene();
-scene.background = new THREE.Color(0xd9d9d9);
+scene.background = new THREE.Color(0xF7F7F7);
 
 for (let arrays in MAINOBJ) {
     for (let item of MAINOBJ[arrays]) scene.add(item);

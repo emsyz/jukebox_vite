@@ -8,7 +8,7 @@ export { addAndLoad, loader, Combi, elevationEl, MODELS, TEXTURES, MATERIALS, st
 const loader = new GLTFLoader();
 
 // debug = 1, put it at 0 to hide the axes
-let axesSize = 1;
+let axesSize = 0;
 
 
 let elevationEl = document.querySelector('.threejs-elevation');
